@@ -11,23 +11,31 @@ var (
 	EitherPromise EitherT = NewEitherT(Promise{})
 )
 
-func JsonParse(m interface{}) EitherT {
-	promise := Promise.Of(handleException(func(data AnyVal) Either {
-		if err := json.Unmarshal(data, &m); err != nil {
-			return NewLeft(err)
-		}
-		return NewRight(m)
-	}))
+func parseJson(raw []byte, val AnyVal) Either {
+	if err := json.Unmarshal(raw, &val); err != nil {
+		return NewLeft(err)
+	}
+	return NewRight(val)
+}
+
+func parseQuery(raw string) Either {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return NewLeft(err)
+	}
+	return NewRight(u.Query())
+}
+
+func JsonParse(raw []byte, val AnyVal) EitherT {
+	promise := Promise{}.Of(handleException(func(x AnyVal) Either {
+		return parseJson(x.([]byte), val)
+	})(raw))
 	return EitherPromise.From(promise)
 }
 
-func QueryParse(u string) EitherT {
-	promise := Promise.Of(handleException(func(data AnyVal) Either {
-		u, err := url.Parse(u)
-		if err != nil {
-			return NewLeft(err)
-		}
-		return NewRight(u.Query())
-	}))
+func QueryParse(raw string) EitherT {
+	promise := Promise{}.Of(handleException(func(x AnyVal) Either {
+		return parseQuery(x.(string))
+	})(raw))
 	return EitherPromise.From(promise)
 }

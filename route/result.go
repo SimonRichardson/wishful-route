@@ -1,6 +1,7 @@
 package route
 
 import (
+	"fmt"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 	"net/http"
@@ -16,13 +17,13 @@ func NewResult(body string, statusCode int, headers map[string]string) Result {
 	return Result{
 		Body:       body,
 		StatusCode: statusCode,
-		Header:     headers,
+		Headers:    headers,
 	}
 }
 
 func (r Result) Plain(statusCode int, body string) Result {
 	return NewResult(body, statusCode, map[string]string{
-		"Content-Length": len(body),
+		"Content-Length": fmt.Sprintf("%s", len(body)),
 		"Content-Type":   "text/plain",
 	})
 }

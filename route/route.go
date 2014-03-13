@@ -5,12 +5,13 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
+type RouteFallback func() AnyVal
 type RouteCallback func(x AnyVal) Option
 
-func Route(fallback AnyVal, rs []RouteCallback) func(x AnyVal) AnyVal {
+func Route(fallback RouteFallback, rs []RouteCallback) func(x AnyVal) AnyVal {
 	return func(x AnyVal) AnyVal {
 		opt := compact(rs, x)
-		return opt.GetOrElse(fallback)
+		return opt.GetOrElse(fallback())
 	}
 }
 

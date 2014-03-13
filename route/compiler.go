@@ -6,7 +6,6 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 	"net/url"
 	"regexp"
-	"strings"
 )
 
 const (
@@ -23,8 +22,8 @@ func extractIdents(path string) Option {
 	if e != nil {
 		return NewNone()
 	}
-	return NewSome(r.ReplaceAllFunc(path, func(a []byte) []byte {
-		return "([^\\/]+)"
+	return NewSome(r.ReplaceAllFunc([]byte(path), func(a []byte) []byte {
+		return []byte("([^\\/]+)")
 	}))
 }
 
@@ -36,7 +35,7 @@ func compileReg(path string, reg string) Option {
 	var a string
 
 	r := regexp.MustCompile("/$")
-	if r.Match(path) {
+	if r.Match([]byte(path)) {
 		a = fmt.Sprintf("^%s?", reg)
 	} else {
 		a = fmt.Sprintf("^%s\\/?", reg)
@@ -52,7 +51,7 @@ func compileReg(path string, reg string) Option {
 func CompilePath(path string) func(url string) Option {
 	paramReg := extractIdents(path)
 	reg := paramReg.Chain(func(x AnyVal) Monad {
-		return compileReg(path, x)
+		return compileReg(path, x.(string))
 	}).(Option)
 	return func(raw string) Option {
 		return reg.Chain(func(x AnyVal) Monad {
@@ -61,19 +60,20 @@ func CompilePath(path string) func(url string) Option {
 				return NewNone()
 			}
 			// Retrieve the path
-			pathName := u.Path
+			pathName := []byte(u.Path)
 
-            that := x.(regexp.Regexp).FindAll(pathName, -1)
-            if that != nil {
-                return NewNone()
-            }
+			exp := x.(regexp.Regexp)
+			that := exp.FindAll(pathName, -1)
+			if that != nil {
+				return NewNone()
+			}
 
-            var result := make([]string, 0, 0)
-            for k, v := range that {
-                result = append(result, v)
-            }
+			result := make([]string, 0, 0)
+			for k, v := range that {
+				result = append(result, string(v))
+			}
 
-            return NewSome(result)
+			return NewSome(result)
 		}).(Option)
 	}
 }
