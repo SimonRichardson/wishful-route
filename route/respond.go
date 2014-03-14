@@ -1,26 +1,32 @@
 package route
 
 import (
-	. "github.com/SimonRichardson/wishful/useful"
-	. "github.com/SimonRichardson/wishful/wishful"
 	"net/http"
 	"strings"
+	. "github.com/SimonRichardson/wishful/useful"
+	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-func respond(method string, path string, responder func(req Request) AnyVal) Option {
+func respond(method string, path string, responder func(req *Request) AnyVal) func(request http.Request) Option {
 	lower := strings.ToLower(method)
 	extract := CompilePath(path)
 	return func(request http.Request) Option {
-		return guard(lower == strings.ToLower(request.Method)).Chain(func(x AnyVal) Monad {
-			return extract(request.URL).Chain(func(params AnyVal) Monad {
-				req := NewRequest(request)
-				return Some(responder(req))
-			})
-		})
+		cond := lower == strings.ToLower(request.Method)
+		return guard(cond).Chain(
+			func(x AnyVal) Monad {
+				url := request.URL.String()
+				return extract(url).Chain(
+					func(params AnyVal) Monad {
+						req := NewRequest(request)
+						return NewSome(responder(req))
+					},
+				)
+			},
+		).(Option)
 	}
 }
 
-func guard(cond bool) Monad {
+func guard(cond bool) Option {
 	if cond {
 		return NewSome(Empty{})
 	} else {
@@ -28,10 +34,10 @@ func guard(cond bool) Monad {
 	}
 }
 
-func Get(path string, responder func(req Request) AnyVal) Option {
+func Get(path string, responder func(req *Request) AnyVal) func(request http.Request) Option {
 	return respond("get", path, responder)
 }
 
-func Post(path string, responder func(req Request) AnyVal) Option {
+func Post(path string, responder func(req *Request) AnyVal) func(request http.Request) Option {
 	return respond("post", path, responder)
 }

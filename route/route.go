@@ -5,10 +5,7 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-type RouteFallback func() AnyVal
-type RouteCallback func(x AnyVal) Option
-
-func Route(fallback RouteFallback, rs []RouteCallback) func(x AnyVal) AnyVal {
+func Route(fallback func() AnyVal, rs []func(x AnyVal) Option) func(x AnyVal) AnyVal {
 	return func(x AnyVal) AnyVal {
 		opt := compact(rs, x)
 		return opt.GetOrElse(fallback())
@@ -17,7 +14,7 @@ func Route(fallback RouteFallback, rs []RouteCallback) func(x AnyVal) AnyVal {
 
 // This is a partial applicative
 // TODO (simon) : we could implement this as a goroutine
-func compact(rs []RouteCallback, x AnyVal) Option {
+func compact(rs []func(x AnyVal) Option, x AnyVal) Option {
 	if len(rs) == 0 {
 		return NewNone()
 	}

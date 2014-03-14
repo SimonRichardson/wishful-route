@@ -2,10 +2,10 @@ package route
 
 import (
 	"fmt"
-	. "github.com/SimonRichardson/wishful/useful"
-	. "github.com/SimonRichardson/wishful/wishful"
 	"net/url"
 	"regexp"
+	. "github.com/SimonRichardson/wishful/useful"
+	. "github.com/SimonRichardson/wishful/wishful"
 )
 
 const (
@@ -69,7 +69,7 @@ func CompilePath(path string) func(url string) Option {
 			}
 
 			result := make([]string, 0, 0)
-			for k, v := range that {
+			for _, v := range that {
 				result = append(result, string(v))
 			}
 
