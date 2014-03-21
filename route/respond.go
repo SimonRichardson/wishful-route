@@ -1,7 +1,6 @@
 package route
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 	. "github.com/SimonRichardson/wishful/useful"
@@ -16,7 +15,6 @@ func respond(method string, path string, responder func(req *Request) AnyVal) fu
 		return guard(cond).Chain(
 			func(x AnyVal) Monad {
 				url := request.URL.String()
-				fmt.Println(path, url)
 				return extract(url).Chain(
 					func(params AnyVal) Monad {
 						req := NewRequest(request)
