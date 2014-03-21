@@ -22,9 +22,7 @@ func extractIdents(path string) Option {
 	if e != nil {
 		return NewNone()
 	}
-	return NewSome(r.ReplaceAllFunc([]byte(path), func(a []byte) []byte {
-		return []byte("([^\\/]+)")
-	}))
+	return NewSome(r.ReplaceAllString(path, "([^\\/]+)"))
 }
 
 func compileReg(path string, reg string) Option {
@@ -62,9 +60,9 @@ func CompilePath(path string) func(url string) Option {
 			// Retrieve the path
 			pathName := []byte(u.Path)
 
-			exp := x.(regexp.Regexp)
+			exp := x.(*regexp.Regexp)
 			that := exp.FindAll(pathName, -1)
-			if that != nil {
+			if len(that) < 1 {
 				return NewNone()
 			}
 

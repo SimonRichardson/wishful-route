@@ -1,20 +1,22 @@
 package route
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-func respond(method string, path string, responder func(req *Request) AnyVal) func(request http.Request) Option {
+func respond(method string, path string, responder func(req *Request) AnyVal) func(request *http.Request) Option {
 	lower := strings.ToLower(method)
 	extract := CompilePath(path)
-	return func(request http.Request) Option {
+	return func(request *http.Request) Option {
 		cond := lower == strings.ToLower(request.Method)
 		return guard(cond).Chain(
 			func(x AnyVal) Monad {
 				url := request.URL.String()
+				fmt.Println(path, url)
 				return extract(url).Chain(
 					func(params AnyVal) Monad {
 						req := NewRequest(request)
@@ -34,10 +36,10 @@ func guard(cond bool) Option {
 	}
 }
 
-func Get(path string, responder func(req *Request) AnyVal) func(request http.Request) Option {
+func Get(path string, responder func(req *Request) AnyVal) func(request *http.Request) Option {
 	return respond("get", path, responder)
 }
 
-func Post(path string, responder func(req *Request) AnyVal) func(request http.Request) Option {
+func Post(path string, responder func(req *Request) AnyVal) func(request *http.Request) Option {
 	return respond("post", path, responder)
 }

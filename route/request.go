@@ -5,10 +5,10 @@ import (
 )
 
 type Request struct {
-	Request http.Request
+	Request *http.Request
 }
 
-func NewRequest(request http.Request) *Request {
+func NewRequest(request *http.Request) *Request {
 	return &Request{
 		Request: request,
 	}
