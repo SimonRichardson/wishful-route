@@ -17,12 +17,45 @@ var (
 	param string = fmt.Sprintf("%s(%s)", sigil, ident)
 )
 
+type params struct {
+	RegExp *regexp.Regexp
+	Names  []string
+}
+
+func flattenIdents(names [][]string) []string {
+	n := len(names)
+	res := make([]string, n, n)
+	for k, v := range names {
+		res[k] = v[1]
+	}
+	return res
+}
+
+func flattenNames(names [][]string) []string {
+	if len(names) > 0 {
+		return names[0][1:]
+	}
+	return make([]string, 0, 0)
+}
+
 func extractIdents(path string) Option {
 	r, e := regexp.Compile(param)
 	if e != nil {
 		return NewNone()
 	}
 	return NewSome(r.ReplaceAllString(path, "([^\\/]+)"))
+}
+
+func extractIdentNames(path string) Option {
+	r, e := regexp.Compile(param)
+	if e != nil {
+		return NewNone()
+	}
+	a := r.FindAllStringSubmatch(path, -1)
+	if len(a) > 0 {
+		return NewSome(flattenIdents(a))
+	}
+	return NewNone()
 }
 
 func compileReg(path string, reg string) Option {
@@ -46,32 +79,57 @@ func compileReg(path string, reg string) Option {
 	return NewSome(exp)
 }
 
-func CompilePath(path string) func(url string) Option {
+func getParams(path string) Monad {
 	paramReg := extractIdents(path)
-	reg := paramReg.Chain(func(x AnyVal) Monad {
-		return compileReg(path, x.(string))
-	}).(Option)
+	return paramReg.Chain(
+		func(x AnyVal) Monad {
+			return compileReg(path, x.(string))
+		},
+	).Chain(
+		func(x AnyVal) Monad {
+			expr := x.(*regexp.Regexp)
+			return extractIdentNames(path).Map(
+				func(x AnyVal) AnyVal {
+					return params{
+						RegExp: expr,
+						Names:  x.([]string),
+					}
+				},
+			).(Option).OrElse(getDefaultNames(expr))
+		},
+	).(Option)
+}
+
+func getDefaultNames(expr *regexp.Regexp) Option {
+	return NewSome(params{
+		RegExp: expr,
+		Names:  make([]string, 0, 0),
+	})
+}
+
+func CompilePath(path string) func(url string) Option {
+	reg := getParams(path)
 	return func(raw string) Option {
 		return reg.Chain(func(x AnyVal) Monad {
+			p := x.(params)
+
 			u, err := url.Parse(raw)
 			if err != nil {
 				return NewNone()
 			}
-			// Retrieve the path
-			pathName := []byte(u.Path)
 
-			exp := x.(*regexp.Regexp)
-			that := exp.FindAll(pathName, -1)
+			exp := p.RegExp
+			that := exp.FindAllStringSubmatch(u.Path, -1)
+
 			if len(that) < 1 {
 				return NewNone()
 			}
 
-			result := make([]string, 0, 0)
-			for _, v := range that {
-				result = append(result, string(v))
+			res := make(map[string]string)
+			for k, v := range flattenNames(that) {
+				res[p.Names[k]] = v
 			}
-
-			return NewSome(result)
+			return NewSome(res)
 		}).(Option)
 	}
 }
