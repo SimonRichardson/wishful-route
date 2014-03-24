@@ -7,7 +7,7 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-func respond(method string, path string, responder func(req *Request) AnyVal) func(request *http.Request) Option {
+func respond(method string, path string, responder func(req *http.Request) AnyVal) func(request *http.Request) Option {
 	lower := strings.ToLower(method)
 	extract := CompilePath(path)
 	return func(request *http.Request) Option {
@@ -17,8 +17,7 @@ func respond(method string, path string, responder func(req *Request) AnyVal) fu
 				url := request.URL.String()
 				return extract(url).Chain(
 					func(params AnyVal) Monad {
-						req := NewRequest(request)
-						return NewSome(responder(req))
+						return NewSome(responder(request))
 					},
 				)
 			},
@@ -34,10 +33,10 @@ func guard(cond bool) Option {
 	}
 }
 
-func Get(path string, responder func(req *Request) AnyVal) func(request *http.Request) Option {
+func Get(path string, responder func(req *http.Request) AnyVal) func(request *http.Request) Option {
 	return respond("get", path, responder)
 }
 
-func Post(path string, responder func(req *Request) AnyVal) func(request *http.Request) Option {
+func Post(path string, responder func(req *http.Request) AnyVal) func(request *http.Request) Option {
 	return respond("post", path, responder)
 }

@@ -50,7 +50,7 @@ func QueryParse(raw string) EitherT {
 }
 
 func ReadBody(req *http.Request) EitherT {
-	c := req.Header.Get("content-length")
+	c := req.Header.Get("Content-Length")
 	length, err := strconv.Atoi(c)
 	if err != nil {
 		return from(NewLeft(err))
@@ -67,7 +67,7 @@ func ReadBody(req *http.Request) EitherT {
 		return from(NewLeft(err))
 	}
 
-	return from(NewRight(b))
+	return from(NewRight(string(b)))
 }
 
 func Json(val AnyVal, req *http.Request) EitherT {

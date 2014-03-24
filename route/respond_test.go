@@ -19,8 +19,8 @@ func extract(x Option) AnyVal {
 	)
 }
 
-func constant(x string) func(req *Request) AnyVal {
-	return func(req *Request) AnyVal {
+func constant(x string) func(req *http.Request) AnyVal {
+	return func(req *http.Request) AnyVal {
 		return x
 	}
 }

@@ -2,9 +2,9 @@ package route
 
 import (
 	"fmt"
+	"net/http"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
-	"net/http"
 )
 
 type Result struct {
@@ -48,7 +48,7 @@ func (r Result) InternalServerError(body string) Promise {
 
 func (r Result) Redirect(url string) Promise {
 	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(NewResult("", 302, map[string]string{
+		return resolve(NewResult("", http.StatusFound, map[string]string{
 			"Location": url,
 		}))
 	})
