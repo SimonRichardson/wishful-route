@@ -28,11 +28,11 @@ func parseJson(raw []byte, val AnyVal) Either {
 }
 
 func parseQuery(raw string) Either {
-	u, err := url.Parse(raw)
+	u, err := url.ParseQuery(raw)
 	if err != nil {
 		return NewLeft(err)
 	}
-	return NewRight(u.Query())
+	return NewRight(u)
 }
 
 func JsonParse(val AnyVal) func(raw []byte) EitherT {
@@ -51,18 +51,18 @@ func QueryParse(raw string) EitherT {
 
 func ReadBody(req *http.Request) EitherT {
 	c := req.Header.Get("content-length")
-	length, err := strconv.ParseInt(c, 10, 64)
+	length, err := strconv.Atoi(c)
 	if err != nil {
 		return from(NewLeft(err))
 	}
 
-	reader := io.LimitReader(req.Body, length)
+	reader := io.LimitReader(req.Body, int64(length))
 	b, e := ioutil.ReadAll(reader)
 
 	if e != nil {
 		return from(NewLeft(e))
 	}
-	if len(b) > int(length) {
+	if len(b) > length {
 		err := errors.New("http: Body too large")
 		return from(NewLeft(err))
 	}
