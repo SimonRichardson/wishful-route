@@ -2,14 +2,23 @@ package route
 
 import (
 	"encoding/json"
+	"errors"
+	"io"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strconv"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
-	"net/url"
 )
 
 var (
 	EitherPromise EitherT = NewEitherT(Promise{})
 )
+
+func from(x Either) EitherT {
+	return EitherPromise.From(Promise{}.Of(x))
+}
 
 func parseJson(raw []byte, val AnyVal) Either {
 	if err := json.Unmarshal(raw, &val); err != nil {
@@ -26,16 +35,53 @@ func parseQuery(raw string) Either {
 	return NewRight(u.Query())
 }
 
-func JsonParse(raw []byte, val AnyVal) EitherT {
-	promise := Promise{}.Of(handleException(func(x AnyVal) Either {
-		return parseJson(x.([]byte), val)
-	})(raw))
-	return EitherPromise.From(promise)
+func JsonParse(val AnyVal) func(raw []byte) EitherT {
+	return func(raw []byte) EitherT {
+		return from(handleException(func(x AnyVal) Either {
+			return parseJson(x.([]byte), val)
+		})(raw))
+	}
 }
 
 func QueryParse(raw string) EitherT {
-	promise := Promise{}.Of(handleException(func(x AnyVal) Either {
+	return from(handleException(func(x AnyVal) Either {
 		return parseQuery(x.(string))
 	})(raw))
-	return EitherPromise.From(promise)
+}
+
+func ReadBody(req *http.Request) EitherT {
+	c := req.Header.Get("content-length")
+	length, err := strconv.ParseInt(c, 10, 64)
+	if err != nil {
+		return from(NewLeft(err))
+	}
+
+	reader := io.LimitReader(req.Body, length)
+	b, e := ioutil.ReadAll(reader)
+
+	if e != nil {
+		return from(NewLeft(e))
+	}
+	if len(b) > int(length) {
+		err := errors.New("http: Body too large")
+		return from(NewLeft(err))
+	}
+
+	return from(NewRight(b))
+}
+
+func Json(val AnyVal, req *http.Request) EitherT {
+	return ReadBody(req).Chain(func(x AnyVal) Monad {
+		return JsonParse(val)(x.([]byte))
+	}).(EitherT)
+}
+
+func Query(req *http.Request) EitherT {
+	return ReadBody(req).Chain(func(x AnyVal) Monad {
+		return QueryParse(x.(string))
+	}).(EitherT)
+}
+
+func Raw(req *http.Request) EitherT {
+	return ReadBody(req)
 }
