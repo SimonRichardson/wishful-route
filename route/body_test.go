@@ -19,6 +19,21 @@ func request(body string, length string) *http.Request {
 	return req
 }
 
+func Test_RawShouldReturnString(t *testing.T) {
+	f := func(x string) string {
+		promise := Raw(request(x, fmt.Sprintf("%d", len(x)))).Run.(Promise)
+		return promise.Fork(func(x AnyVal) AnyVal {
+			return x.(Either).Fold(Identity, Identity)
+		}).(string)
+	}
+	g := func(x string) string {
+		return x
+	}
+	if err := quick.CheckEqual(f, g, nil); err != nil {
+		t.Error(err)
+	}
+}
+
 func Test_ReadBodyShouldReturnString(t *testing.T) {
 	f := func(x string) string {
 		promise := ReadBody(request(x, fmt.Sprintf("%d", len(x)))).Run.(Promise)
