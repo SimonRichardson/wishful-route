@@ -62,8 +62,9 @@ func ReadBody(req *http.Request) EitherT {
 	if e != nil {
 		return from(NewLeft(e))
 	}
-	if len(b) > length {
-		err := errors.New("http: Body too large")
+
+	if len(b) != length {
+		err := errors.New("http: Body length mismatch")
 		return from(NewLeft(err))
 	}
 
