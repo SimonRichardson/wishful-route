@@ -73,7 +73,8 @@ func ReadBody(req *http.Request) EitherT {
 
 func Json(val AnyVal, req *http.Request) EitherT {
 	return ReadBody(req).Chain(func(x AnyVal) Monad {
-		return JsonParse(val)(x.([]byte))
+		str := x.(string)
+		return JsonParse(val)([]byte(str))
 	}).(EitherT)
 }
 
