@@ -28,25 +28,25 @@ func (r Result) Plain(statusCode int, body string) Result {
 	})
 }
 
-func (r Result) Ok(body string) Promise {
+func Ok(body string) Promise {
 	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(r.Plain(http.StatusOK, body))
+		return resolve(Result{}.Plain(http.StatusOK, body))
 	})
 }
 
-func (r Result) NotFound(body string) Promise {
+func NotFound(body string) Promise {
 	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(r.Plain(http.StatusNotFound, body))
+		return resolve(Result{}.Plain(http.StatusNotFound, body))
 	})
 }
 
-func (r Result) InternalServerError(body string) Promise {
+func InternalServerError(body string) Promise {
 	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(r.Plain(http.StatusInternalServerError, body))
+		return resolve(Result{}.Plain(http.StatusInternalServerError, body))
 	})
 }
 
-func (r Result) Redirect(url string) Promise {
+func Redirect(url string) Promise {
 	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
 		return resolve(NewResult("", http.StatusFound, map[string]string{
 			"Location": url,
