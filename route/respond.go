@@ -6,22 +6,6 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-var (
-	ParamLens Lens = Lens{}.AccessorLens(ParamAccessor{})
-)
-
-type ParamAccessor struct{}
-
-func (s ParamAccessor) Get(x AnyVal) AnyVal {
-	return x.(*Request).Params
-}
-
-func (s ParamAccessor) Set(x AnyVal, y AnyVal) AnyVal {
-	a := NewRequest(x.(*Request).Request)
-	a.Params = y.(map[string]string)
-	return a
-}
-
 func respond(method string, path string, responder func(req *Request) AnyVal) func(request *Request) Option {
 	lower := strings.ToLower(method)
 	extract := CompilePath(path)
@@ -32,8 +16,8 @@ func respond(method string, path string, responder func(req *Request) AnyVal) fu
 				url := request.URL.String()
 				return extract(url).Chain(
 					func(params AnyVal) Monad {
-						req := ParamLens.Run(request).Set(params)
-						return NewSome(responder(req.(*Request)))
+						req := request.SetParams(params.(map[string]string))
+						return NewSome(responder(req))
 					},
 				)
 			},
