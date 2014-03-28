@@ -19,8 +19,8 @@ func extract(x Option) AnyVal {
 	)
 }
 
-func constant(x string) func(req *http.Request) AnyVal {
-	return func(req *http.Request) AnyVal {
+func constant(x string) func(req *Request) AnyVal {
+	return func(req *Request) AnyVal {
 		return x
 	}
 }
@@ -30,7 +30,7 @@ func Test_ReturnsNoneIfMethodDoesNotMatch(t *testing.T) {
 		p := fmt.Sprintf("/%s", x)
 		r := respond("GET", p, constant(y))
 		req, _ := http.NewRequest("POST", p, nil)
-		return r(req)
+		return r(NewRequest(req))
 	}
 	g := func(x string, y string) Option {
 		return NewNone()
@@ -46,7 +46,7 @@ func Test_ReturnsNoneIfPathDoesNotMatch(t *testing.T) {
 		p1 := fmt.Sprintf("/%s", y)
 		r := respond("GET", p0, constant(z))
 		req, _ := http.NewRequest("POST", p1, nil)
-		return r(req)
+		return r(NewRequest(req))
 	}
 	g := func(x string, y string, z string) Option {
 		return NewNone()
@@ -61,7 +61,7 @@ func Test_CallsResponderWithRequestAndReturnsWithSome(t *testing.T) {
 		p := fmt.Sprintf("/%s", x)
 		r := respond("GET", p, constant(y))
 		req, _ := http.NewRequest("GET", p, nil)
-		return extract(r(req))
+		return extract(r(NewRequest(req)))
 	}
 	g := func(x string, y string) AnyVal {
 		return y
@@ -76,7 +76,7 @@ func Test_CallsGetWithRequestAndReturnsWithSome(t *testing.T) {
 		p := fmt.Sprintf("/%s", x)
 		r := Get(p, constant(y))
 		req, _ := http.NewRequest("GET", p, nil)
-		return extract(r(req))
+		return extract(r(NewRequest(req)))
 	}
 	g := func(x string, y string) AnyVal {
 		return y
@@ -91,7 +91,7 @@ func Test_CallsPostWithRequestAndReturnsWithSome(t *testing.T) {
 		p := fmt.Sprintf("/%s", x)
 		r := Post(p, constant(y))
 		req, _ := http.NewRequest("POST", p, nil)
-		return extract(r(req))
+		return extract(r(NewRequest(req)))
 	}
 	g := func(x string, y string) AnyVal {
 		return y

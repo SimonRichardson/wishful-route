@@ -19,6 +19,7 @@ func compact(rs []func(x AnyVal) Option, x AnyVal) Option {
 		return NewNone()
 	}
 
+	// We should trampoline this!
 	a := rs[0](x)
 	if b, ok := a.(Some); ok {
 		return b
