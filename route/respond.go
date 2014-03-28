@@ -6,7 +6,7 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-func respond(method string, path string, responder func(req *Request) AnyVal) func(request *Request) Option {
+func respond(method string, path string, responder func(req *Request) Promise) func(request *Request) Option {
 	lower := strings.ToLower(method)
 	extract := CompilePath(path)
 	return func(request *Request) Option {
@@ -33,10 +33,10 @@ func guard(cond bool) Option {
 	}
 }
 
-func Get(path string, responder func(req *Request) AnyVal) func(request *Request) Option {
+func Get(path string, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("get", path, responder)
 }
 
-func Post(path string, responder func(req *Request) AnyVal) func(request *Request) Option {
+func Post(path string, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("post", path, responder)
 }

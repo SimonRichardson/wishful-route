@@ -23,7 +23,7 @@ func NewResult(body string, statusCode int, headers map[string]string) Result {
 
 func (r Result) Plain(statusCode int, body string) Result {
 	return NewResult(body, statusCode, map[string]string{
-		"Content-Length": fmt.Sprintf("%s", len(body)),
+		"Content-Length": fmt.Sprintf("%d", len(body)),
 		"Content-Type":   "text/plain",
 	})
 }

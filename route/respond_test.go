@@ -9,26 +9,10 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-func extract(x Option) AnyVal {
-	return x.Fold(
-		Identity,
-		func() AnyVal {
-			panic(fmt.Errorf("Failed if called"))
-			return Empty{}
-		},
-	)
-}
-
-func constant(x string) func(req *Request) AnyVal {
-	return func(req *Request) AnyVal {
-		return x
-	}
-}
-
 func Test_ReturnsNoneIfMethodDoesNotMatch(t *testing.T) {
 	f := func(x string, y string) Option {
 		p := fmt.Sprintf("/%s", x)
-		r := respond("GET", p, constant(y))
+		r := respond("GET", p, constantStringReturnPromise(y))
 		req, _ := http.NewRequest("POST", p, nil)
 		return r(NewRequest(req))
 	}
@@ -44,7 +28,7 @@ func Test_ReturnsNoneIfPathDoesNotMatch(t *testing.T) {
 	f := func(x string, y string, z string) Option {
 		p0 := fmt.Sprintf("/%s", x)
 		p1 := fmt.Sprintf("/%s", y)
-		r := respond("GET", p0, constant(z))
+		r := respond("GET", p0, constantStringReturnPromise(z))
 		req, _ := http.NewRequest("POST", p1, nil)
 		return r(NewRequest(req))
 	}
@@ -56,10 +40,11 @@ func Test_ReturnsNoneIfPathDoesNotMatch(t *testing.T) {
 	}
 }
 
+// **
 func Test_CallsResponderWithRequestAndReturnsWithSome(t *testing.T) {
 	f := func(x string, y string) AnyVal {
 		p := fmt.Sprintf("/%s", x)
-		r := respond("GET", p, constant(y))
+		r := respond("GET", p, constantStringReturnPromise(y))
 		req, _ := http.NewRequest("GET", p, nil)
 		return extract(r(NewRequest(req)))
 	}
@@ -74,7 +59,7 @@ func Test_CallsResponderWithRequestAndReturnsWithSome(t *testing.T) {
 func Test_CallsGetWithRequestAndReturnsWithSome(t *testing.T) {
 	f := func(x string, y string) AnyVal {
 		p := fmt.Sprintf("/%s", x)
-		r := Get(p, constant(y))
+		r := Get(p, constantStringReturnPromise(y))
 		req, _ := http.NewRequest("GET", p, nil)
 		return extract(r(NewRequest(req)))
 	}
@@ -89,7 +74,7 @@ func Test_CallsGetWithRequestAndReturnsWithSome(t *testing.T) {
 func Test_CallsPostWithRequestAndReturnsWithSome(t *testing.T) {
 	f := func(x string, y string) AnyVal {
 		p := fmt.Sprintf("/%s", x)
-		r := Post(p, constant(y))
+		r := Post(p, constantStringReturnPromise(y))
 		req, _ := http.NewRequest("POST", p, nil)
 		return extract(r(NewRequest(req)))
 	}

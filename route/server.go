@@ -2,30 +2,41 @@ package route
 
 import (
 	"net/http"
+	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-/*
-Listen("8080", Route(
-    func() Promise {
-        return NotFound("Nope!")
-    }
-), []func(x AnyVal) Option {
-    Get('/',  func(req *http.Request) AnyVal {
-        return Ok("Hello World!")
-    }),
-})
-*/
+type Server struct {
+	server *http.Server
+}
 
-func Listen(address string, route func(x AnyVal) AnyVal) *http.Server {
-	return &http.Server{
-		Addr:    address,
-		Handler: http.HandlerFunc(handle(route)),
+func Listen(address string, route func(x *Request) Promise) *Server {
+	return &Server{
+		server: &http.Server{
+			Addr:    address,
+			Handler: http.HandlerFunc(handle(route)),
+		},
 	}
 }
 
-func handle(route func(x AnyVal) AnyVal) func(w http.ResponseWriter, r *http.Request) {
-	return func(w http.ResponseWriter, r *http.Request) {
+func Serve(s *Server) Either {
+	if err := s.server.ListenAndServe(); err != nil {
+		return NewLeft(err)
+	}
+	return NewRight(s)
+}
 
+func handle(route func(x *Request) Promise) func(w http.ResponseWriter, r *http.Request) {
+	return func(w http.ResponseWriter, r *http.Request) {
+		route(NewRequest(r)).Fork(func(x AnyVal) AnyVal {
+			result := x.(Result)
+			header := w.Header()
+			for k, v := range result.Headers {
+				header.Set(k, v)
+			}
+			w.WriteHeader(result.StatusCode)
+			w.Write([]byte(result.Body))
+			return x
+		})
 	}
 }
