@@ -7,11 +7,22 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
+func extractPromise(x AnyVal) AnyVal {
+	promise := x.(Promise)
+	return promise.Extract()
+}
+
+func constantPromise(x AnyVal) func() Promise {
+	return func() Promise {
+		return Promise{}.Of(x).(Promise)
+	}
+}
+
 func Test_CallsFallbackIfEmptyList(t *testing.T) {
 	f := func(x string) string {
-		fallback := ConstantNoArgs(x)
+		fallback := constantPromise(x)
 		res := Route(fallback, make([]func(x AnyVal) Option, 0, 0))
-		return res(nil).(string)
+		return extractPromise(res(nil)).(string)
 	}
 	g := func(x string) string {
 		return x
@@ -23,14 +34,14 @@ func Test_CallsFallbackIfEmptyList(t *testing.T) {
 
 func Test_CallsFirstMatch(t *testing.T) {
 	f := func(x string, y string, z string) string {
-		fallback := ConstantNoArgs(x)
+		fallback := constantPromise(x)
 		routes := []func(x AnyVal) Option{
 			func(a AnyVal) Option {
-				return NewSome(y)
+				return NewSome(Promise{}.Of(y))
 			},
 		}
 		res := Route(fallback, routes)
-		return res(z).(string)
+		return extractPromise(res(z)).(string)
 	}
 	g := func(x string, y string, z string) string {
 		return y
@@ -42,17 +53,17 @@ func Test_CallsFirstMatch(t *testing.T) {
 
 func Test_CallsFirstMatchWhenMultiple(t *testing.T) {
 	f := func(x string, y string, z string) string {
-		fallback := ConstantNoArgs(x)
+		fallback := constantPromise(x)
 		routes := []func(x AnyVal) Option{
 			func(a AnyVal) Option {
 				return NewNone()
 			},
 			func(a AnyVal) Option {
-				return NewSome(y)
+				return NewSome(Promise{}.Of(y))
 			},
 		}
 		res := Route(fallback, routes)
-		return res(z).(string)
+		return extractPromise(res(z)).(string)
 	}
 	g := func(x string, y string, z string) string {
 		return y
@@ -64,7 +75,7 @@ func Test_CallsFirstMatchWhenMultiple(t *testing.T) {
 
 func Test_CallsFallbackIfNoMatch(t *testing.T) {
 	f := func(x string, y string, z string) string {
-		fallback := ConstantNoArgs(x)
+		fallback := constantPromise(x)
 		routes := []func(x AnyVal) Option{
 			func(a AnyVal) Option {
 				return NewNone()
@@ -74,7 +85,7 @@ func Test_CallsFallbackIfNoMatch(t *testing.T) {
 			},
 		}
 		res := Route(fallback, routes)
-		return res(z).(string)
+		return extractPromise(res(z)).(string)
 	}
 	g := func(x string, y string, z string) string {
 		return x
