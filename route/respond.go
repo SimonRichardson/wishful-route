@@ -40,3 +40,19 @@ func Get(path string, responder func(req *Request) Promise) func(request *Reques
 func Post(path string, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("post", path, responder)
 }
+
+func Put(path string, responder func(req *Request) Promise) func(request *Request) Option {
+	return respond("put", path, responder)
+}
+
+func Patch(path string, responder func(req *Request) Promise) func(request *Request) Option {
+	return respond("patch", path, responder)
+}
+
+func Delete(path string, responder func(req *Request) Promise) func(request *Request) Option {
+	return respond("delete", path, responder)
+}
+
+func Options(path string, responder func(req *Request) Promise) func(request *Request) Option {
+	return respond("options", path, responder)
+}
