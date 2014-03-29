@@ -26,6 +26,10 @@ func Serve(s *Server) Either {
 	return NewRight(s)
 }
 
+func Handle(route func(x *Request) Promise) IO {
+	return IO{}.Of(http.HandlerFunc(handle(route))).(IO)
+}
+
 func handle(route func(x *Request) Promise) func(w http.ResponseWriter, r *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		route(NewRequest(r)).Fork(func(x AnyVal) AnyVal {
