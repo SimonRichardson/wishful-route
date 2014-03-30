@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	. "github.com/SimonRichardson/wishful-route/route"
-	. "github.com/SimonRichardson/wishful-route/route/plain"
+	. "github.com/SimonRichardson/wishful-route/route/html"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 )
@@ -21,13 +21,15 @@ func main() {
 			Describe(
 				"Get the default route.",
 				Get(NewLeft("/"), func(req *Request) Promise {
-					return Ok("Hello World!")
+					return UseTemplate(`Hello World!`).Chain(func(x AnyVal) Monad {
+						return Ok(x.(string))
+					}).(Promise)
 				}),
 			),
 			Describe(
 				"Echo the value sent via parameters.",
 				Get(NewRight("/:echo"), func(req *Request) Promise {
-					return Ok(fmt.Sprintf("%s", req.Params["echo"]))
+					return Ok(fmt.Sprintf("<h1>%s</h1>", req.Params["echo"]))
 				}),
 			),
 		},
