@@ -12,7 +12,7 @@ import (
 func Test_ReturnsNoneIfMethodDoesNotMatch(t *testing.T) {
 	f := func(x string, y string) Option {
 		p := fmt.Sprintf("/%s", x)
-		r := respond("GET", p, constantStringReturnPromise(y))
+		r := respond("GET", NewLeft(p), constantStringReturnPromise(y))
 		req, _ := http.NewRequest("POST", p, nil)
 		return r(NewRequest(req))
 	}
@@ -28,7 +28,7 @@ func Test_ReturnsNoneIfPathDoesNotMatch(t *testing.T) {
 	f := func(x string, y string, z string) Option {
 		p0 := fmt.Sprintf("/%s", x)
 		p1 := fmt.Sprintf("/%s", y)
-		r := respond("GET", p0, constantStringReturnPromise(z))
+		r := respond("GET", NewLeft(p0), constantStringReturnPromise(z))
 		req, _ := http.NewRequest("POST", p1, nil)
 		return r(NewRequest(req))
 	}
@@ -44,7 +44,7 @@ func Test_ReturnsNoneIfPathDoesNotMatch(t *testing.T) {
 func Test_CallsResponderWithRequestAndReturnsWithSome(t *testing.T) {
 	f := func(x string, y string) AnyVal {
 		p := fmt.Sprintf("/%s", x)
-		r := respond("GET", p, constantStringReturnPromise(y))
+		r := respond("GET", NewLeft(p), constantStringReturnPromise(y))
 		req, _ := http.NewRequest("GET", p, nil)
 		return extract(r(NewRequest(req)))
 	}
@@ -59,7 +59,7 @@ func Test_CallsResponderWithRequestAndReturnsWithSome(t *testing.T) {
 func Test_CallsGetWithRequestAndReturnsWithSome(t *testing.T) {
 	f := func(x string, y string) AnyVal {
 		p := fmt.Sprintf("/%s", x)
-		r := Get(p, constantStringReturnPromise(y))
+		r := Get(NewLeft(p), constantStringReturnPromise(y))
 		req, _ := http.NewRequest("GET", p, nil)
 		return extract(r(NewRequest(req)))
 	}
@@ -74,7 +74,37 @@ func Test_CallsGetWithRequestAndReturnsWithSome(t *testing.T) {
 func Test_CallsPostWithRequestAndReturnsWithSome(t *testing.T) {
 	f := func(x string, y string) AnyVal {
 		p := fmt.Sprintf("/%s", x)
-		r := Post(p, constantStringReturnPromise(y))
+		r := Post(NewLeft(p), constantStringReturnPromise(y))
+		req, _ := http.NewRequest("POST", p, nil)
+		return extract(r(NewRequest(req)))
+	}
+	g := func(x string, y string) AnyVal {
+		return y
+	}
+	if err := quick.CheckEqual(f, g, nil); err != nil {
+		t.Error(err)
+	}
+}
+
+func Test_CallsGetAsRightWithRequestAndReturnsWithSome(t *testing.T) {
+	f := func(x string, y string) AnyVal {
+		p := fmt.Sprintf("/%s", x)
+		r := Get(NewRight(p), constantStringReturnPromise(y))
+		req, _ := http.NewRequest("GET", p, nil)
+		return extract(r(NewRequest(req)))
+	}
+	g := func(x string, y string) AnyVal {
+		return y
+	}
+	if err := quick.CheckEqual(f, g, nil); err != nil {
+		t.Error(err)
+	}
+}
+
+func Test_CallsPostAsRightWithRequestAndReturnsWithSome(t *testing.T) {
+	f := func(x string, y string) AnyVal {
+		p := fmt.Sprintf("/%s", x)
+		r := Post(NewRight(p), constantStringReturnPromise(y))
 		req, _ := http.NewRequest("POST", p, nil)
 		return extract(r(NewRequest(req)))
 	}

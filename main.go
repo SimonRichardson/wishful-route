@@ -17,10 +17,10 @@ func main() {
 			return NotFound("Nope!")
 		},
 		[]func(x *Request) Option{
-			Get("/", func(req *Request) Promise {
+			Get(NewLeft("/"), func(req *Request) Promise {
 				return Ok("Hello World!")
 			}),
-			Get("/:echo", func(req *Request) Promise {
+			Get(NewRight("/:echo"), func(req *Request) Promise {
 				return Ok(fmt.Sprintf("%s", req.Params["echo"]))
 			}),
 		},

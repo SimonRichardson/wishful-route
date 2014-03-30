@@ -133,3 +133,14 @@ func CompilePath(path string) func(url string) Option {
 		}).(Option)
 	}
 }
+
+func CompileSimplePath(path string) func(url string) Option {
+	return func(raw string) Option {
+		u, err := url.Parse(raw)
+		if err != nil || path != u.Path {
+			return NewNone()
+		}
+
+		return NewSome(make(map[string]string))
+	}
+}

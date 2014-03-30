@@ -6,9 +6,20 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-func respond(method string, path string, responder func(req *Request) Promise) func(request *Request) Option {
+func compilePaths(path Either) func(url string) Option {
+	return path.Fold(
+		func(x AnyVal) AnyVal {
+			return CompileSimplePath(x.(string))
+		},
+		func(x AnyVal) AnyVal {
+			return CompilePath(x.(string))
+		},
+	).(func(url string) Option)
+}
+
+func respond(method string, path Either, responder func(req *Request) Promise) func(request *Request) Option {
 	lower := strings.ToLower(method)
-	extract := CompilePath(path)
+	extract := compilePaths(path)
 	return func(request *Request) Option {
 		cond := lower == strings.ToLower(request.Method)
 		return guard(cond).Chain(
@@ -33,26 +44,26 @@ func guard(cond bool) Option {
 	}
 }
 
-func Get(path string, responder func(req *Request) Promise) func(request *Request) Option {
+func Get(path Either, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("get", path, responder)
 }
 
-func Post(path string, responder func(req *Request) Promise) func(request *Request) Option {
+func Post(path Either, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("post", path, responder)
 }
 
-func Put(path string, responder func(req *Request) Promise) func(request *Request) Option {
+func Put(path Either, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("put", path, responder)
 }
 
-func Patch(path string, responder func(req *Request) Promise) func(request *Request) Option {
+func Patch(path Either, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("patch", path, responder)
 }
 
-func Delete(path string, responder func(req *Request) Promise) func(request *Request) Option {
+func Delete(path Either, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("delete", path, responder)
 }
 
-func Options(path string, responder func(req *Request) Promise) func(request *Request) Option {
+func Options(path Either, responder func(req *Request) Promise) func(request *Request) Option {
 	return respond("options", path, responder)
 }
