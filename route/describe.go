@@ -10,8 +10,8 @@ func Describe(d string, f func(x *Request) Option) func(x *Request) Option {
 		return f(x).Map(func(a AnyVal) AnyVal {
 			return a.(Promise).Map(func(a AnyVal) AnyVal {
 				result := a.(Result)
-				result.Headers = result.Headers.Add(NewTuple2("x-describe", d))
-				return result
+				headers := result.Headers
+				return result.SetHeaders(headers.Add(NewTuple2("x-describe", d)))
 			}).(Promise)
 		}).(Option)
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	lens Lens = Lens{}.AccessorLens(accessor{})
+	requestLens Lens = Lens{}.AccessorLens(requestAccessor{})
 )
 
 type Request struct {
@@ -22,16 +22,16 @@ func NewRequest(req *http.Request) *Request {
 }
 
 func (r *Request) SetParams(p map[string]string) *Request {
-	return lens.Run(r).Set(p).(*Request)
+	return requestLens.Run(r).Set(p).(*Request)
 }
 
-type accessor struct{}
+type requestAccessor struct{}
 
-func (s accessor) Get(x AnyVal) AnyVal {
+func (s requestAccessor) Get(x AnyVal) AnyVal {
 	return x.(*Request).Params
 }
 
-func (s accessor) Set(x AnyVal, y AnyVal) AnyVal {
+func (s requestAccessor) Set(x AnyVal, y AnyVal) AnyVal {
 	a := NewRequest(x.(*Request).Request)
 	a.Params = y.(map[string]string)
 	return a

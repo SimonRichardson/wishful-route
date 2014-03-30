@@ -7,6 +7,21 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
+var (
+	resultLens Lens = Lens{}.AccessorLens(resultAccessor{})
+)
+
+type resultAccessor struct{}
+
+func (s resultAccessor) Get(x AnyVal) AnyVal {
+	return x.(Result).Headers
+}
+
+func (s resultAccessor) Set(x AnyVal, y AnyVal) AnyVal {
+	r := x.(Result)
+	return NewResult(r.Body, r.StatusCode, y.(Headers))
+}
+
 type Headers map[string]string
 
 func NewHeaders(m map[string]string) Headers {
@@ -42,6 +57,10 @@ func (r Result) Plain(statusCode int, body string) Result {
 		"Content-Length": fmt.Sprintf("%d", len(body)),
 		"Content-Type":   "text/plain",
 	}))
+}
+
+func (r Result) SetHeaders(h Headers) Result {
+	return resultLens.Run(r).Set(h).(Result)
 }
 
 func Ok(body string) Promise {
