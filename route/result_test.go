@@ -48,9 +48,9 @@ func Test_RedirectShouldReturnCorrectResult(t *testing.T) {
 		return Redirect(x).Fork(Identity).(Result)
 	}
 	g := func(x string) Result {
-		return NewResult("", http.StatusFound, map[string]string{
+		return NewResult("", http.StatusFound, NewHeaders(map[string]string{
 			"Location": x,
-		})
+		}))
 	}
 	if err := quick.CheckEqual(f, g, nil); err != nil {
 		t.Error(err)

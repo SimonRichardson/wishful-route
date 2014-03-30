@@ -17,12 +17,18 @@ func main() {
 			return NotFound("Nope!")
 		},
 		[]func(x *Request) Option{
-			Get(NewLeft("/"), func(req *Request) Promise {
-				return Ok("Hello World!")
-			}),
-			Get(NewRight("/:echo"), func(req *Request) Promise {
-				return Ok(fmt.Sprintf("%s", req.Params["echo"]))
-			}),
+			Describe(
+				"Get the default route.",
+				Get(NewLeft("/"), func(req *Request) Promise {
+					return Ok("Hello World!")
+				}),
+			),
+			Describe(
+				"Echo the value sent via parameters.",
+				Get(NewRight("/:echo"), func(req *Request) Promise {
+					return Ok(fmt.Sprintf("%s", req.Params["echo"]))
+				}),
+			),
 		},
 	))).(Either).Fold(
 		func(x AnyVal) AnyVal {
