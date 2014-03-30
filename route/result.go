@@ -1,8 +1,6 @@
 package route
 
 import (
-	"fmt"
-	"net/http"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 )
@@ -52,39 +50,6 @@ func NewResult(body string, statusCode int, headers Headers) Result {
 	}
 }
 
-func (r Result) Plain(statusCode int, body string) Result {
-	return NewResult(body, statusCode, NewHeaders(map[string]string{
-		"Content-Length": fmt.Sprintf("%d", len(body)),
-		"Content-Type":   "text/plain",
-	}))
-}
-
 func (r Result) SetHeaders(h Headers) Result {
 	return resultLens.Run(r).Set(h).(Result)
-}
-
-func Ok(body string) Promise {
-	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(Result{}.Plain(http.StatusOK, body))
-	})
-}
-
-func NotFound(body string) Promise {
-	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(Result{}.Plain(http.StatusNotFound, body))
-	})
-}
-
-func InternalServerError(body string) Promise {
-	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(Result{}.Plain(http.StatusInternalServerError, body))
-	})
-}
-
-func Redirect(url string) Promise {
-	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(NewResult("", http.StatusFound, NewHeaders(map[string]string{
-			"Location": url,
-		})))
-	})
 }

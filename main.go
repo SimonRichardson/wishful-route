@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	. "github.com/SimonRichardson/wishful-route/route"
+	. "github.com/SimonRichardson/wishful-route/route/plain"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 )
