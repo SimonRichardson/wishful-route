@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	. "github.com/SimonRichardson/wishful-route/route"
-	. "github.com/SimonRichardson/wishful-route/route/json"
+	. "github.com/SimonRichardson/wishful-route/route/jsonp"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 )
@@ -35,19 +35,19 @@ func main() {
 
 	server := Serve(Listen(port, Route(
 		func() Promise {
-			return NotFound("Nope!")
+			return NotFound("callback", NewMessage("Nope!"))
 		},
 		[]func(x *Request) Option{
 			Describe(
 				"Get the default route.",
 				Get(NewLeft("/"), func(req *Request) Promise {
-					return Ok(NewMessage("Hello World!"))
+					return Ok("callback", NewMessage("Hello World!"))
 				}),
 			),
 			Describe(
 				"Echo the value sent via parameters.",
 				Get(NewRight("/:echo"), func(req *Request) Promise {
-					return Ok(NewEcho(req.Params["echo"]))
+					return Ok("callback", NewEcho(req.Params["echo"]))
 				}),
 			),
 		},
