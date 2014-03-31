@@ -3,12 +3,32 @@ package main
 import (
 	"fmt"
 	. "github.com/SimonRichardson/wishful-route/route"
-	. "github.com/SimonRichardson/wishful-route/route/html"
+	. "github.com/SimonRichardson/wishful-route/route/json"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
 const port string = "127.0.0.1:8080"
+
+type Message struct {
+	Message string
+}
+
+type Echo struct {
+	Echo string
+}
+
+func NewMessage(a string) Message {
+	return Message{
+		Message: a,
+	}
+}
+
+func NewEcho(a string) Echo {
+	return Echo{
+		Echo: a,
+	}
+}
 
 func main() {
 	fmt.Println("Booting...")
@@ -21,15 +41,13 @@ func main() {
 			Describe(
 				"Get the default route.",
 				Get(NewLeft("/"), func(req *Request) Promise {
-					return UseTemplate(`Hello World!`).Chain(func(x AnyVal) Monad {
-						return Ok(x.(string))
-					}).(Promise)
+					return Ok(NewMessage("Hello World!"))
 				}),
 			),
 			Describe(
 				"Echo the value sent via parameters.",
 				Get(NewRight("/:echo"), func(req *Request) Promise {
-					return Ok(fmt.Sprintf("<h1>%s</h1>", req.Params["echo"]))
+					return Ok(NewEcho(req.Params["echo"]))
 				}),
 			),
 		},
