@@ -9,6 +9,10 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
+const (
+	DefaultCallbackName string = "callback"
+)
+
 type Error struct {
 	Title       string `json:"title"`
 	Description string `json:"description"`

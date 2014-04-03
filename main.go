@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	. "github.com/SimonRichardson/wishful-route/route"
-	. "github.com/SimonRichardson/wishful-route/route/jsonp"
+	. "github.com/SimonRichardson/wishful-route/route/generic"
 	. "github.com/SimonRichardson/wishful/useful"
 	. "github.com/SimonRichardson/wishful/wishful"
 )
@@ -41,13 +41,13 @@ func main() {
 			Describe(
 				"Get the default route.",
 				Get(NewLeft("/"), func(req *Request) Promise {
-					return Ok("callback", NewMessage("Hello World!"))
+					return Ok(req, "callback", NewMessage("Hello World!"))
 				}),
 			),
 			Describe(
 				"Echo the value sent via parameters.",
 				Get(NewRight("/:echo"), func(req *Request) Promise {
-					return Ok("callback", NewEcho(req.Params["echo"]))
+					return Ok(req, "callback", NewEcho(req.Params["echo"]))
 				}),
 			),
 		},
