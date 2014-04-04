@@ -22,35 +22,43 @@ const (
 	JsonpFormat Format = "jsonp"
 )
 
-func NewGenericResult(req *Request, statusCode int, body string) Result {
+func Ok(req *Request, body AnyVal) Promise {
 	switch getFormat(req.Request) {
 	case XmlFormat:
 		panic(errors.New("Missing implementation"))
 	case TxtFormat:
-		return plainResult.NewPlainResult(statusCode, body)
+		return plainResult.Ok(body.(string))
 	case JsonFormat:
-		return jsonResult.NewJsonResult(statusCode, body)
+		return jsonResult.Ok(body)
 	default:
-		return htmlResult.NewHtmlResult(statusCode, body)
+		return htmlResult.Ok(body.(string))
 	}
 }
 
-func Ok(req *Request, body string) Promise {
-	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(NewGenericResult(req, http.StatusOK, body))
-	})
+func NotFound(req *Request, body AnyVal) Promise {
+	switch getFormat(req.Request) {
+	case XmlFormat:
+		panic(errors.New("Missing implementation"))
+	case TxtFormat:
+		return plainResult.NotFound(body.(string))
+	case JsonFormat:
+		return jsonResult.NotFound(body)
+	default:
+		return htmlResult.NotFound(body.(string))
+	}
 }
 
-func NotFound(req *Request, body string) Promise {
-	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(NewGenericResult(req, http.StatusNotFound, body))
-	})
-}
-
-func InternalServerError(req *Request, body string) Promise {
-	return NewPromise(func(resolve func(x AnyVal) AnyVal) AnyVal {
-		return resolve(NewGenericResult(req, http.StatusInternalServerError, body))
-	})
+func InternalServerError(req *Request, body AnyVal) Promise {
+	switch getFormat(req.Request) {
+	case XmlFormat:
+		panic(errors.New("Missing implementation"))
+	case TxtFormat:
+		return plainResult.InternalServerError(body.(string))
+	case JsonFormat:
+		return jsonResult.InternalServerError(body)
+	default:
+		return htmlResult.InternalServerError(body.(string))
+	}
 }
 
 func getFormat(req *http.Request) Format {
@@ -66,7 +74,7 @@ func getFormat(req *http.Request) Format {
 		return JsonFormat
 	case strings.Contains(accept, "text/javascript"):
 		return JsonpFormat
+	default:
+		return HtmlFormat
 	}
-
-	return HtmlFormat
 }

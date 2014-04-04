@@ -33,8 +33,8 @@ func constantStringReturnPromise(x string) func(req *Request) Promise {
 	}
 }
 
-func constantAnyValReturnPromise(x AnyVal) func() Promise {
-	return func() Promise {
+func constantAnyValReturnPromise(x AnyVal) func(req *Request) Promise {
+	return func(req *Request) Promise {
 		return Promise{}.Of(x).(Promise)
 	}
 }

@@ -5,11 +5,11 @@ import (
 	. "github.com/SimonRichardson/wishful/wishful"
 )
 
-func Route(fallback func() Promise, rs []func(x *Request) Option) func(x *Request) Promise {
+func Route(fallback func(x *Request) Promise, rs []func(x *Request) Option) func(x *Request) Promise {
 	return func(x *Request) Promise {
 		opt := compact(rs, x)
 		return opt.GetOrElse(func() AnyVal {
-			return fallback()
+			return fallback(x)
 		}).(Promise)
 	}
 }

@@ -34,20 +34,20 @@ func main() {
 	fmt.Println("Booting...")
 
 	server := Serve(Listen(port, Route(
-		func() Promise {
-			return NotFound("callback", NewMessage("Nope!"))
+		func(req *Request) Promise {
+			return NotFound(req, NewMessage("Nope!"))
 		},
 		[]func(x *Request) Option{
 			Describe(
 				"Get the default route.",
 				Get(NewLeft("/"), func(req *Request) Promise {
-					return Ok(req, "callback", NewMessage("Hello World!"))
+					return Ok(req, NewMessage("Hello World!"))
 				}),
 			),
 			Describe(
 				"Echo the value sent via parameters.",
 				Get(NewRight("/:echo"), func(req *Request) Promise {
-					return Ok(req, "callback", NewEcho(req.Params["echo"]))
+					return Ok(req, NewEcho(req.Params["echo"]))
 				}),
 			),
 		},
